@@ -1,0 +1,40 @@
+# Node modules (both frontend and backend)
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# dotenv environment variables
+.env
+.env.local
+.env.*.local
+
+# OS and Editor junk
+.DS_Store
+Thumbs.db
+
+# Build folders
+/dist
+/build
+client/build
+server/build
+
+# IDE folders
+.vscode/
+.idea/
+
+# Coverage reports
+coverage/
+
+# Optional: ignore MongoDB data dump
+dump/
+
+# Optional: ignore uploads or temporary assets
+/uploads
+/tmp
