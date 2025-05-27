@@ -23,24 +23,50 @@ const QuestionSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-const RoundSchema = new mongoose.Schema({
-  roundName: {
-    type: String,
-    required: [true, "Round name is required"],
+const RoundSchema = new mongoose.Schema(
+  {
+    roundName: {
+      type: String,
+      required: [true, "Round name is required"],
+    },
+    date: {
+      type: Date,
+      required: [true, "Interview date is required"],
+    },
+    status: {
+      type: String,
+      enum: ["pending", "success", "failed"],
+      default: "Scheduled",
+    },
+    outcome: {
+      type: String,
+      enum: ["Selected", "Rejected", "On Hold", "Awaiting Feedback"],
+    },
+    duration: Number, // in minutes
+    type: {
+      type: String,
+      enum: ["HR", "Technical", "System Design", "Managerial", "Case Study"],
+    },
+    mode: {
+      type: String,
+      enum: ["Online", "Offline", "Telephonic", "Video Call"],
+    },
+    interviewer: {
+      name: String,
+      role: String,
+      email: String,
+    },
+    feedback: String,
+    questions: [QuestionSchema],
   },
-  date: {
-    type: Date,
-    default: Date.now,
-  },
-  status: {
-    type: String,
-    enum: ["pending", "success", "failed"],
-    default: "pending",
-  },
-  questions: [QuestionSchema],
-});
+  { timestamps: true }
+);
 
 const CompanySchema = new mongoose.Schema({
+  offerStatus: {
+    type: String,
+    enum: ["Accepted", "Declined", "Negotiating", "Pending"],
+  },
   companyName: {
     type: String,
     required: [true, "Company name is required"],
