@@ -2,6 +2,8 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import User from "../models/User.js";
+// authRoutes.js
+import auth from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -38,6 +40,16 @@ router.post("/register", async (req, res) => {
     res.status(201).send({ token });
   } catch (error) {
     res.status(400).send({ error: error.message });
+  }
+});
+
+// Add this route
+router.get("/check", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    res.json(user);
+  } catch (error) {
+    res.status(401).json({ error: "Not authenticated" });
   }
 });
 

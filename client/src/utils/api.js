@@ -5,7 +5,7 @@ const api = axios.create({
   withCredentials: true,
 });
 
-// Add auth header to every request
+// Request interceptor to add token to headers
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {

@@ -1,11 +1,42 @@
 import mongoose from "mongoose";
 
-const QuestionSchema = new mongoose.Schema({
-  questionText: String,
-});
-
+const QuestionSchema = new mongoose.Schema(
+  {
+    questionText: {
+      type: String,
+      required: [true, "Question text is required"],
+      trim: true,
+    },
+    // Make other fields optional initially
+    category: {
+      type: String,
+      default: "technical",
+    },
+    difficulty: {
+      type: String,
+      default: "medium",
+    },
+    askedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+  },
+  { timestamps: true }
+);
 const RoundSchema = new mongoose.Schema({
-  roundName: String,
+  roundName: {
+    type: String,
+    required: [true, "Round name is required"],
+  },
+  date: {
+    type: Date,
+    default: Date.now,
+  },
+  status: {
+    type: String,
+    enum: ["pending", "success", "failed"],
+    default: "pending",
+  },
   questions: [QuestionSchema],
 });
 

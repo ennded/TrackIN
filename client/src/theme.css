@@ -1,0 +1,14 @@
+/* frontend/src/theme.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom chart tooltips */
+.recharts-tooltip {
+  @apply bg-white shadow-lg rounded-lg p-3 border border-gray-200;
+}
+
+/* Custom chart legends */
+.recharts-legend-item {
+  @apply text-sm text-gray-600;
+}

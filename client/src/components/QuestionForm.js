@@ -1,6 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
-import { PlusCircleIcon } from "@heroicons/react/24/outline";
+import api from "../utils/api";
 
 const QuestionForm = ({ companyId, roundId, onQuestionAdded }) => {
   const [questionText, setQuestionText] = useState("");
@@ -8,46 +7,56 @@ const QuestionForm = ({ companyId, roundId, onQuestionAdded }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!questionText.trim()) return;
+    const trimmedText = questionText.trim();
+
+    if (!trimmedText || trimmedText.length < 3) {
+      alert("Question must be at least 3 characters");
+      return;
+    }
 
     try {
       setIsSubmitting(true);
-      const { data } = await axios.post(
-        `/api/companies/${companyId}/rounds/${roundId}/questions`,
-        { questionText: questionText.trim() }
+      const { data } = await api.post(
+        `/companies/${companyId}/rounds/${roundId}/questions`,
+        { questionText: trimmedText }, // Send only necessary field
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "X-Requested-With": "XMLHttpRequest",
+          },
+        }
       );
       onQuestionAdded(data);
       setQuestionText("");
     } catch (error) {
-      console.error("Error adding question:", error);
-      alert("Failed to add question. Please try again.");
+      console.error("Question Error:", error.response?.data);
+      alert(error.response?.data?.error || "Failed to add question");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mt-4">
-      <div className="flex gap-2 items-stretch">
+    <form onSubmit={handleSubmit} className="mb-4">
+      <div className="flex gap-2 items-center">
         <input
           type="text"
           value={questionText}
           onChange={(e) => setQuestionText(e.target.value)}
-          placeholder="Enter interview question"
-          className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+          placeholder="Enter your question"
+          className="flex-1 p-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
           disabled={isSubmitting}
         />
         <button
           type="submit"
           disabled={isSubmitting || !questionText.trim()}
-          className={`px-4 py-2 rounded-md flex items-center gap-1 ${
+          className={`px-4 py-2 rounded-lg ${
             isSubmitting || !questionText.trim()
-              ? "bg-gray-200 cursor-not-allowed"
-              : "bg-purple-600 hover:bg-purple-700 text-white"
-          } transition-colors text-sm`}
+              ? "bg-gray-200 text-gray-400"
+              : "bg-purple-500 hover:bg-purple-600 text-white"
+          } transition-colors`}
         >
-          <PlusCircleIcon className="w-5 h-5" />
-          {isSubmitting ? "Adding..." : "Add Question"}
+          {isSubmitting ? "Adding..." : "Add"}
         </button>
       </div>
     </form>

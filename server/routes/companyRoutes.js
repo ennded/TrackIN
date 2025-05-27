@@ -15,27 +15,45 @@ router.post("/", auth, async (req, res) => {
 });
 
 // Add Round to Company
+// Add auth middleware to round routes
 router.post("/:companyId/rounds", auth, async (req, res) => {
   try {
     const company = await Company.findById(req.params.companyId);
-    company.rounds.push(req.body);
-    await company.save();
-    res.json(company);
+    company.rounds.push({
+      ...req.body,
+      date: new Date(), // Add default date if needed
+    });
+    const updatedCompany = await company.save();
+    res.json(updatedCompany);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
 
 // Add Question to Round
+// Add auth middleware to question route
 router.post("/:companyId/rounds/:roundId/questions", auth, async (req, res) => {
   try {
     const company = await Company.findById(req.params.companyId);
     const round = company.rounds.id(req.params.roundId);
-    round.questions.push(req.body);
-    await company.save();
-    res.json(company);
+
+    if (!req.body.questionText || req.body.questionText.trim().length < 3) {
+      return res.status(400).json({ error: "Valid question text required" });
+    }
+
+    round.questions.push({
+      questionText: req.body.questionText.trim(),
+      askedBy: req.user.id, // Ensure this is populated
+    });
+
+    const savedCompany = await company.save();
+    res.json(savedCompany);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.error("Question creation error:", error);
+    res.status(400).json({
+      error: error.message,
+      validationErrors: error.errors,
+    });
   }
 });
 
