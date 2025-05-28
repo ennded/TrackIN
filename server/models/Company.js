@@ -28,12 +28,6 @@ const RoundSchema = new mongoose.Schema(
     date: {
       type: Date,
       required: [true, "Interview date is required"],
-      validate: {
-        validator: function (v) {
-          return v instanceof Date && !isNaN(v);
-        },
-        message: "Invalid interview date",
-      },
     },
     roundName: {
       type: String,
@@ -76,11 +70,11 @@ const RoundSchema = new mongoose.Schema(
     },
     duration: {
       type: Number,
-      required: true,
+      required: [true, "Duration is required"], // Added required
       min: [15, "Minimum 15 minutes"],
       max: [480, "Maximum 8 hours"],
     },
-    calendarEventId: String, // For sync operations
+    //calendarEventId: String, // For sync operations
   },
   { timestamps: true }
 );

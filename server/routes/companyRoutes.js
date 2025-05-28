@@ -18,52 +18,26 @@ router.post("/", auth, async (req, res) => {
 // Add auth middleware to round routes
 router.post("/:companyId/rounds", auth, async (req, res) => {
   try {
-    console.log("Received Request Body:", req.body);
     const company = await Company.findById(req.params.companyId);
+    if (!company) return res.status(404).json({ error: "Company not found" });
 
-    if (!company) {
-      return res.status(404).json({ error: "Company not found" });
-    }
-
-    const { roundName, date, duration } = req.body;
-
-    // Check presence of required fields FIRST
-    if (!roundName || !date || duration === undefined) {
-      return res.status(400).json({ error: "Missing required fields" });
-    }
-
-    const parsedDate = new Date(date);
-    const parsedDuration = parseInt(duration, 10);
-
-    const errors = [];
-    if (!roundName.trim()) errors.push("Round name required");
-    if (isNaN(parsedDate.getTime())) errors.push("Invalid date");
-    if (isNaN(parsedDuration) || parsedDuration < 15 || parsedDuration > 480) {
-      errors.push("Invalid duration (15-480 minutes)");
-    }
-
-    if (errors.length > 0) {
-      return res.status(400).json({ error: errors.join(", ") });
-    }
-
+    // Create new round with validation
     const newRound = {
-      roundName: roundName.trim(),
-      date: parsedDate,
-      duration: parsedDuration,
+      roundName: req.body.roundName,
+      date: new Date(req.body.date),
+      duration: Number(req.body.duration),
       status: "Scheduled",
+      // Add other fields as needed
     };
 
-    const round = company.rounds.id(req.params.roundId);
-
+    // Push and save
+    company.rounds.push(newRound);
     const savedCompany = await company.save();
+
     res.status(201).json(savedCompany);
   } catch (error) {
-    console.log("Full Error:", error);
     console.error("Error adding round:", error);
-    res.status(400).json({
-      error: error.message,
-      validationErrors: error.errors,
-    });
+    res.status(400).json({ error: error.message });
   }
 });
 
@@ -119,9 +93,21 @@ router.delete("/:companyId", auth, async (req, res) => {
 router.delete("/:companyId/rounds/:roundId", auth, async (req, res) => {
   try {
     const company = await Company.findById(req.params.companyId);
-    company.rounds.pull({ _id: req.params.roundId });
-    const updatedCompany = await company.save();
-    res.json(updatedCompany);
+    if (!company) return res.status(404).json({ error: "Company not found" });
+
+    // Find index and remove
+    const roundIndex = company.rounds.findIndex(
+      (r) => r._id.toString() === req.params.roundId
+    );
+
+    if (roundIndex === -1) {
+      return res.status(404).json({ error: "Round not found" });
+    }
+
+    company.rounds.splice(roundIndex, 1);
+    await company.save();
+
+    res.json({ message: "Round deleted successfully" });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
