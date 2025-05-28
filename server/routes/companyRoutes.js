@@ -132,10 +132,18 @@ router.delete(
   async (req, res) => {
     try {
       const company = await Company.findById(req.params.companyId);
+      if (!company) return res.status(404).json({ error: "Company not found" });
+
       const round = company.rounds.id(req.params.roundId);
-      round.questions.pull({ _id: req.params.questionId });
-      const updatedCompany = await company.save();
-      res.json(updatedCompany);
+      if (!round) return res.status(404).json({ error: "Round not found" });
+
+      // Remove question using filter
+      round.questions = round.questions.filter(
+        (q) => q._id.toString() !== req.params.questionId
+      );
+
+      await company.save();
+      res.json(company);
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
