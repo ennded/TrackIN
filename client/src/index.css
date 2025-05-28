@@ -15,3 +15,50 @@ code {
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Add these custom styles */
+.recharts-tooltip {
+  @apply bg-white shadow-xl rounded-lg p-4 border border-gray-200;
+}
+
+.recharts-legend-item {
+  @apply text-sm text-gray-600;
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Fix date picker positioning */
+.react-datepicker-wrapper {
+  width: 100%;
+}
+
+.react-datepicker-popper {
+  z-index: 50 !important;
+  width: 300px;
+}
+
+.react-datepicker {
+  font-family: inherit;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.react-datepicker__input-container {
+  width: 100%;
+}
+
+.react-datepicker__time-container {
+  width: 120px;
+}

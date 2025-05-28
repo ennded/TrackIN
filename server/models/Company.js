@@ -25,24 +25,32 @@ const QuestionSchema = new mongoose.Schema(
 );
 const RoundSchema = new mongoose.Schema(
   {
-    roundName: {
-      type: String,
-      required: [true, "Round name is required"],
-    },
     date: {
       type: Date,
       required: [true, "Interview date is required"],
+      validate: {
+        validator: function (v) {
+          return v instanceof Date && !isNaN(v);
+        },
+        message: "Invalid interview date",
+      },
     },
+    roundName: {
+      type: String,
+      required: [true, "Round name is required"],
+      trim: true,
+      minlength: [3, "Round name must be at least 3 characters"],
+    },
+
     status: {
       type: String,
-      enum: ["pending", "success", "failed"],
+      enum: ["Scheduled", "Completed", "Selected", "Rejected", "On Hold"], // Updated enum
       default: "Scheduled",
     },
     outcome: {
       type: String,
       enum: ["Selected", "Rejected", "On Hold", "Awaiting Feedback"],
     },
-    duration: Number, // in minutes
     type: {
       type: String,
       enum: ["HR", "Technical", "System Design", "Managerial", "Case Study"],
@@ -58,6 +66,21 @@ const RoundSchema = new mongoose.Schema(
     },
     feedback: String,
     questions: [QuestionSchema],
+    followUp: {
+      reminderDate: Date,
+      lastFollowUp: Date,
+      followUpCount: {
+        type: Number,
+        default: 0,
+      },
+    },
+    duration: {
+      type: Number,
+      required: true,
+      min: [15, "Minimum 15 minutes"],
+      max: [480, "Maximum 8 hours"],
+    },
+    calendarEventId: String, // For sync operations
   },
   { timestamps: true }
 );

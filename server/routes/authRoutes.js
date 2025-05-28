@@ -43,6 +43,27 @@ router.post("/register", async (req, res) => {
   }
 });
 
+// Add to authRoutes.js
+router.get("/google", (req, res) => {
+  const url = oAuth2Client.generateAuthUrl({
+    access_type: "offline",
+    scope: ["https://www.googleapis.com/auth/calendar"],
+    prompt: "consent",
+  });
+  res.redirect(url);
+});
+
+router.get("/google/callback", async (req, res) => {
+  const { code } = req.query;
+  const { tokens } = await oAuth2Client.getToken(code);
+  // Save tokens to user document
+  await User.findByIdAndUpdate(req.user.id, {
+    googleAccessToken: tokens.access_token,
+    googleRefreshToken: tokens.refresh_token,
+  });
+  res.redirect("/calendar-sync-success");
+});
+
 // Add this route
 router.get("/check", auth, async (req, res) => {
   try {

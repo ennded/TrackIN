@@ -15,18 +15,18 @@ import {
 import { format } from "date-fns";
 
 const Dashboard = ({ companies }) => {
-  // Process interview rounds into a flat array
+  // Flatten interview rounds
   const interviewData =
     companies?.flatMap(
       (company) =>
-        company?.rounds?.flatMap((round) => {
+        company?.rounds?.map((round) => {
           const roundDate = round.date ? new Date(round.date) : new Date();
           return {
             date: format(
               isNaN(roundDate) ? new Date() : roundDate,
               "MMM dd, yyyy"
             ),
-            status: round.status || "pending",
+            status: round.status?.toLowerCase() || "pending",
             company: company.companyName,
             rounds: round.roundNumber,
             questions: round.questions?.length || 0,
@@ -34,13 +34,12 @@ const Dashboard = ({ companies }) => {
         }) || []
     ) || [];
 
-  // Safe data processing
-  const statusCount =
-    interviewData?.reduce((acc, curr) => {
-      const status = curr.status?.toLowerCase() || "unknown";
-      acc[status] = (acc[status] || 0) + 1;
-      return acc;
-    }, {}) || {};
+  // Count statuses
+  const statusCount = interviewData.reduce((acc, curr) => {
+    const status = curr.status || "unknown";
+    acc[status] = (acc[status] || 0) + 1;
+    return acc;
+  }, {});
 
   // Chart data
   const chartData = [
@@ -50,13 +49,30 @@ const Dashboard = ({ companies }) => {
     { name: "Unknown", value: statusCount.unknown || 0, color: "#94a3b8" },
   ];
 
-  // Total rounds for average calculation
+  // Average rounds
   const totalRounds = companies.reduce(
     (acc, curr) => acc + curr.rounds.length,
     0
   );
   const averageRounds =
     companies.length > 0 ? (totalRounds / companies.length).toFixed(1) : "0.0";
+
+  // Stats
+  const totalInterviews = companies.length;
+  const acceptedCount = companies.reduce(
+    (acc, company) =>
+      acc + company.rounds.filter((round) => round.status === "success").length,
+    0
+  );
+
+  const stats = {
+    total: totalInterviews,
+    accepted: acceptedCount,
+    conversionRate:
+      totalInterviews > 0
+        ? ((acceptedCount / totalInterviews) * 100).toFixed(1)
+        : "0.0",
+  };
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -74,17 +90,21 @@ const Dashboard = ({ companies }) => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
           <div className="bg-white p-4 rounded-xl shadow-sm">
             <h3 className="text-gray-500 text-sm">Total Interviews</h3>
-            <p className="text-2xl font-bold text-gray-800">
-              {companies.length}
-            </p>
+            <p className="text-2xl font-bold text-gray-800">{stats.total}</p>
           </div>
           <div className="bg-white p-4 rounded-xl shadow-sm">
             <h3 className="text-gray-500 text-sm">Successful</h3>
             <p className="text-2xl font-bold text-green-600">
               {statusCount.success || 0}
+            </p>
+          </div>
+          <div className="bg-white p-4 rounded-xl shadow-sm">
+            <h3 className="text-gray-500 text-sm">Conversion Rate</h3>
+            <p className="text-2xl font-bold text-purple-600">
+              {stats.conversionRate}%
             </p>
           </div>
           <div className="bg-white p-4 rounded-xl shadow-sm">
@@ -99,7 +119,7 @@ const Dashboard = ({ companies }) => {
           </div>
         </div>
 
-        {/* Charts */}
+        {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Bar Chart */}
           <div className="bg-white p-6 rounded-xl shadow-sm">

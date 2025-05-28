@@ -22,3 +22,25 @@ router.get("/stats/:userId", auth, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+// File: backend/routes/analyticsRoutes.js
+router.get("/stats", auth, async (req, res) => {
+  const stats = await Company.aggregate([
+    { $match: { user: req.user._id } },
+    {
+      $project: {
+        total: { $size: "$rounds" },
+        accepted: {
+          $size: {
+            $filter: {
+              input: "$rounds",
+              as: "round",
+              cond: { $eq: ["$$round.status", "Selected"] },
+            },
+          },
+        },
+      },
+    },
+  ]);
+  res.json(stats);
+});

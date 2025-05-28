@@ -1,112 +1,110 @@
 import { useState } from "react";
-import DatePicker from "react-datepicker"; // Use DateTimePicker component
-import "react-datepicker/dist/react-datepicker.css";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css"; // Add CSS import
+
 import api from "../utils/api";
 
 const RoundForm = ({ companyId, onRoundAdded }) => {
   const [roundName, setRoundName] = useState("");
-  const [roundType, setRoundType] = useState("HR");
-  const [interviewDate, setInterviewDate] = useState(new Date());
-  const [duration, setDuration] = useState("");
-  const [feedback, setFeedback] = useState("");
+  const [date, setDate] = useState(new Date());
+  const [duration, setDuration] = useState(60); // Default 60 minutes
+  const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!roundName.trim()) return;
+    setError("");
 
+    if (!roundName.trim()) {
+      setError("Round name is required");
+      return;
+    }
+
+    if (duration < 15 || duration > 480) {
+      setError("Duration must be between 15-480 minutes");
+      return;
+    }
+    if (!date || isNaN(date.getTime())) {
+      setError("Invalid interview date");
+      return;
+    }
     try {
       setIsSubmitting(true);
-      const { data } = await api.post(
-        `/companies/${companyId}/rounds`,
-        {
-          roundName,
-          roundType,
-          interviewDate,
-          duration: Number(duration),
-          feedback,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const { data } = await api.post(`/companies/${companyId}/rounds`, {
+        roundName: roundName.trim(),
+        date: date.toISOString(),
+        duration: Number(duration),
+        status: "Scheduled", // Default status
+      });
+
       onRoundAdded(data);
       setRoundName("");
-      setRoundType("HR");
-      setInterviewDate(new Date());
-      setDuration("");
-      setFeedback("");
+      setDuration(60);
+      setDate(new Date());
     } catch (error) {
-      console.error("Add Round Error:", error);
-      if (error.response?.status === 401) {
-        alert("Session expired. Please login again.");
-        window.location.href = "/login";
-      }
+      console.log("Full Error Object:", error);
+      console.log("Response Data:", error.response?.data);
+      setError(error.response?.data?.error || "Failed to create round");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="mb-4 p-4 bg-gray-50 rounded-lg space-y-4"
-    >
-      <input
-        type="text"
-        value={roundName}
-        onChange={(e) => setRoundName(e.target.value)}
-        placeholder="Enter round name"
-        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        disabled={isSubmitting}
-      />
+    <form onSubmit={handleSubmit} className="p-4 bg-gray-50 rounded-lg">
+      <div className="space-y-4">
+        {error && <div className="text-red-500 text-sm">{error}</div>}
 
-      <select
-        value={roundType}
-        onChange={(e) => setRoundType(e.target.value)}
-        className="w-full px-4 py-2 border rounded-lg"
-      >
-        <option value="HR">HR</option>
-        <option value="Technical">Technical</option>
-        <option value="System Design">System Design</option>
-      </select>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Round Name
+          </label>
+          <input
+            type="text"
+            value={roundName}
+            onChange={(e) => setRoundName(e.target.value)}
+            className="w-full p-2 border rounded-lg"
+            disabled={isSubmitting}
+          />
+        </div>
 
-      <DatePicker
-        selected={interviewDate}
-        onChange={(date) => setInterviewDate(date)}
-        showTimeSelect
-        dateFormat="Pp"
-        className="w-full px-4 py-2 border rounded-lg"
-      />
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Date & Time
+          </label>
+          <DatePicker
+            selected={date}
+            onChange={(date) => setDate(date)}
+            showTimeSelect
+            dateFormat="MMMM d, yyyy h:mm aa"
+            className="w-full p-2 border rounded-lg"
+            disabled={isSubmitting}
+          />
+        </div>
 
-      <input
-        type="number"
-        value={duration}
-        onChange={(e) => setDuration(e.target.value)}
-        placeholder="Duration (minutes)"
-        className="w-full px-4 py-2 border rounded-lg"
-      />
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Duration (minutes)
+          </label>
+          <input
+            type="number"
+            value={duration}
+            onChange={(e) => setDuration(e.target.value)}
+            min="15"
+            max="480"
+            className="w-full p-2 border rounded-lg"
+            disabled={isSubmitting}
+          />
+        </div>
 
-      <textarea
-        value={feedback}
-        onChange={(e) => setFeedback(e.target.value)}
-        placeholder="Feedback/Notes"
-        className="w-full px-4 py-2 border rounded-lg"
-      />
-
-      <button
-        type="submit"
-        disabled={isSubmitting || !roundName.trim()}
-        className={`w-full py-2 rounded-lg ${
-          isSubmitting || !roundName.trim()
-            ? "bg-gray-200 text-gray-400"
-            : "bg-green-500 hover:bg-green-600 text-white"
-        } transition-colors`}
-      >
-        {isSubmitting ? "Adding..." : "Add Round"}
-      </button>
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 disabled:bg-gray-400"
+        >
+          {isSubmitting ? "Adding..." : "Add Round"}
+        </button>
+      </div>
     </form>
   );
 };
