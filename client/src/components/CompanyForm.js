@@ -1,3 +1,6 @@
+import React, { useState } from "react"; // Add useState import
+import api from "../utils/api"; // Add api import
+
 const CompanyForm = ({ onCompanyAdded }) => {
   const [companyName, setCompanyName] = useState("");
   const [rounds, setRounds] = useState([
@@ -126,3 +129,5 @@ const CompanyForm = ({ onCompanyAdded }) => {
     </form>
   );
 };
+
+export default CompanyForm;

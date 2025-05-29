@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { ArrowLeftOnRectangleIcon } from "@heroicons/react/24/outline";
 import api from "./utils/api";
 import AuthForm from "./components/AuthForm";
-import CompanyForm from "./components/CompanyForm";
+import CompanyForm from "./components/CompanyForm"; // Default import
 import CompanyAccordion from "./components/CompanyAccordion";
 import Dashboard from "./components/Dashboard";
 
