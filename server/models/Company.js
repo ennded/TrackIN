@@ -23,6 +23,7 @@ const QuestionSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
 const RoundSchema = new mongoose.Schema(
   {
     date: {
@@ -70,9 +71,8 @@ const RoundSchema = new mongoose.Schema(
     },
     duration: {
       type: Number,
-      required: [true, "Duration is required"], // Added required
-      min: [15, "Minimum 15 minutes"],
-      max: [480, "Maximum 8 hours"],
+      min: 1,
+      default: 30,
     },
     //calendarEventId: String, // For sync operations
   },

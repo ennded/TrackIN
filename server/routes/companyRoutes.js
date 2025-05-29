@@ -21,6 +21,14 @@ router.post("/:companyId/rounds", auth, async (req, res) => {
     const company = await Company.findById(req.params.companyId);
     if (!company) return res.status(404).json({ error: "Company not found" });
 
+    const duration = Number(req.body.duration);
+    if (!duration || isNaN(duration) || duration < 15 || duration > 480) {
+      return res.status(400).json({
+        error:
+          "Duration is required and must be a number between 15 and 480 minutes",
+      });
+    }
+
     // Create new round with validation
     const newRound = {
       roundName: req.body.roundName,
@@ -95,7 +103,6 @@ router.delete("/:companyId/rounds/:roundId", auth, async (req, res) => {
     const company = await Company.findById(req.params.companyId);
     if (!company) return res.status(404).json({ error: "Company not found" });
 
-    // Find index and remove
     const roundIndex = company.rounds.findIndex(
       (r) => r._id.toString() === req.params.roundId
     );
@@ -105,9 +112,10 @@ router.delete("/:companyId/rounds/:roundId", auth, async (req, res) => {
     }
 
     company.rounds.splice(roundIndex, 1);
-    await company.save();
+    const savedCompany = await company.save();
 
-    res.json({ message: "Round deleted successfully" });
+    // Return the updated company so frontend can update state
+    res.json(savedCompany);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

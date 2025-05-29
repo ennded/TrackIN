@@ -1,14 +1,14 @@
-import axios from "axios";
+import api from "../utils/api";
 import { TrashIcon } from "@heroicons/react/24/outline";
 
 const QuestionItem = ({ companyId, roundId, question, onDelete }) => {
   const handleDelete = async () => {
     if (window.confirm("Delete this question?")) {
       try {
-        const { data } = await axios.delete(
-          `/api/companies/${companyId}/rounds/${roundId}/questions/${question._id}`
+        const { data } = await api.delete(
+          `/companies/${companyId}/rounds/${roundId}/questions/${question._id}`
         );
-        onDelete(data); // Pass the updated company to parent
+        onDelete(data); // Pass the updated data to parent
       } catch (error) {
         console.error("Delete failed:", error);
         alert("Failed to delete question");
@@ -28,4 +28,5 @@ const QuestionItem = ({ companyId, roundId, question, onDelete }) => {
     </div>
   );
 };
+
 export default QuestionItem;

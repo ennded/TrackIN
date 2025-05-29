@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import api from "../utils/api";
 import QuestionForm from "./QuestionForm";
 import QuestionItem from "./QuestionItem";
 import {
@@ -15,13 +15,15 @@ const RoundAccordion = ({ companyId, round, onUpdate, onDelete }) => {
   const handleDelete = async () => {
     if (window.confirm(`Delete ${round.roundName} round?`)) {
       try {
-        const { data } = await axios.delete(
-          `/api/companies/${companyId}/rounds/${round._id}`
+        const { data } = await api.delete(
+          `/companies/${companyId}/rounds/${round._id}`
         );
         onUpdate(data); // Pass updated company to parent
       } catch (error) {
         console.error("Delete failed:", error);
-        alert("Failed to delete round");
+        alert(
+          `Deletion failed: ${error.response?.data?.message || "Server error"}`
+        );
       }
     }
   };
