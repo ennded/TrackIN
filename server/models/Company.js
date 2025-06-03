@@ -41,6 +41,7 @@ const RoundSchema = new mongoose.Schema(
       type: String,
       enum: ["Scheduled", "Completed", "Selected", "Rejected", "On Hold"], // Updated enum
       default: "Scheduled",
+      required: true,
     },
     outcome: {
       type: String,
@@ -73,6 +74,7 @@ const RoundSchema = new mongoose.Schema(
       type: Number,
       min: 1,
       default: 30,
+      required: true,
     },
     //calendarEventId: String, // For sync operations
   },

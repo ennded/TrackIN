@@ -98,26 +98,24 @@ router.delete("/:companyId", auth, async (req, res) => {
 });
 
 // Delete Round
-router.delete("/:companyId/rounds/:roundId", auth, async (req, res) => {
+router.delete("/:companyId/rounds/:roundId", async (req, res) => {
   try {
     const company = await Company.findById(req.params.companyId);
     if (!company) return res.status(404).json({ error: "Company not found" });
 
-    const roundIndex = company.rounds.findIndex(
-      (r) => r._id.toString() === req.params.roundId
-    );
+    // Pull the round from the array
+    company.rounds.pull({ _id: req.params.roundId });
 
-    if (roundIndex === -1) {
-      return res.status(404).json({ error: "Round not found" });
+    // Validate before saving
+    const validationError = company.validateSync();
+    if (validationError) {
+      return res.status(400).json({ error: validationError.message });
     }
 
-    company.rounds.splice(roundIndex, 1);
-    const savedCompany = await company.save();
-
-    // Return the updated company so frontend can update state
-    res.json(savedCompany);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
+    await company.save();
+    res.json(company);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
 });
 
@@ -134,9 +132,32 @@ router.patch("/:id", auth, async (req, res) => {
 });
 
 // Delete Question
+// router.delete(
+//   "/:companyId/rounds/:roundId/questions/:questionId",
+//   auth,
+//   async (req, res) => {
+//     try {
+//       const company = await Company.findById(req.params.companyId);
+//       if (!company) return res.status(404).json({ error: "Company not found" });
+
+//       const round = company.rounds.id(req.params.roundId);
+//       if (!round) return res.status(404).json({ error: "Round not found" });
+
+//       // Remove question using filter
+//       round.questions = round.questions.filter(
+//         (q) => q._id.toString() !== req.params.questionId
+//       );
+
+//       await company.save();
+//       res.json(company);
+//     } catch (error) {
+//       res.status(400).json({ error: error.message });
+//     }
+//   }
+// );
+
 router.delete(
   "/:companyId/rounds/:roundId/questions/:questionId",
-  auth,
   async (req, res) => {
     try {
       const company = await Company.findById(req.params.companyId);
@@ -145,15 +166,14 @@ router.delete(
       const round = company.rounds.id(req.params.roundId);
       if (!round) return res.status(404).json({ error: "Round not found" });
 
-      // Remove question using filter
-      round.questions = round.questions.filter(
-        (q) => q._id.toString() !== req.params.questionId
-      );
+      // Remove the question
+      round.questions.pull({ _id: req.params.questionId });
 
-      await company.save();
-      res.json(company);
-    } catch (error) {
-      res.status(400).json({ error: error.message });
+      // Save and return the updated company
+      const updatedCompany = await company.save();
+      res.json(updatedCompany);
+    } catch (err) {
+      res.status(400).json({ error: err.message });
     }
   }
 );
