@@ -2,6 +2,6 @@
 const CalendarSync = ({ interview }) => (
   <button onClick={() => exportToCalendar(interview)} className="btn-secondary">
     <CalendarIcon className="w-5 h-5 mr-2" />
-    Add to Calendar
+    Add to calender
   </button>
 );
