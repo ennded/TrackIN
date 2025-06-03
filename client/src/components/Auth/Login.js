@@ -21,7 +21,7 @@ const Login = () => {
   return (
     <div className="max-w-md mx-auto mt-20 p-6 bg-white rounded shadow">
       <h2 className="text-2xl font-bold mb-4">Login</h2>
-      <form onSubmit={handleSubmit}>{/* Add input fields */}</form>
+      <form onSubmit={handleSubmit}></form>
     </div>
   );
 };
