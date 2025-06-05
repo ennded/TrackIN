@@ -157,7 +157,7 @@ const Dashboard = ({ companies }) => {
           {/* Pie Chart */}
           <div className="bg-white p-6 rounded-xl shadow-sm col-span-full lg:col-span-2">
             <h3 className="text-lg font-semibold mb-4">
-              Question Types Distribution
+              Interview Status Pie Distribution
             </h3>
             <PieChart width={500} height={300}>
               <Pie

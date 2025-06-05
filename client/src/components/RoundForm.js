@@ -34,7 +34,7 @@ const RoundForm = ({ companyId, onRoundAdded }) => {
         roundName: roundName.trim(),
         date: date.toISOString(),
         duration: Number(duration),
-        status: "Scheduled", // Default status
+        status: "pending", // Default status
       });
 
       onRoundAdded(data);
