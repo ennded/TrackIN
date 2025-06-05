@@ -1,13 +1,13 @@
 import { useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css"; // Add CSS import
-
 import api from "../utils/api";
 
 const RoundForm = ({ companyId, onRoundAdded }) => {
   const [roundName, setRoundName] = useState("");
   const [date, setDate] = useState(new Date());
   const [duration, setDuration] = useState(60); // Default 60 minutes
+  const [status, setStatus] = useState("pending");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -34,13 +34,14 @@ const RoundForm = ({ companyId, onRoundAdded }) => {
         roundName: roundName.trim(),
         date: date.toISOString(),
         duration: Number(duration),
-        status: "pending", // Default status
+        status: status, // Default status
       });
 
       onRoundAdded(data);
       setRoundName("");
       setDuration(60);
       setDate(new Date());
+      setStatus("pending");
     } catch (error) {
       console.log("Full Error Object:", error);
       console.log("Response Data:", error.response?.data);

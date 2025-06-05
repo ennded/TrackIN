@@ -39,10 +39,11 @@ const RoundSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["Scheduled", "Completed", "Selected", "Rejected", "On Hold"], // Updated enum
-      default: "Scheduled",
+      enum: ["Pending", "Success", "Failed", "On Hold", "Completed"],
+      default: "Pending",
       required: true,
     },
+
     outcome: {
       type: String,
       enum: ["Selected", "Rejected", "On Hold", "Awaiting Feedback"],

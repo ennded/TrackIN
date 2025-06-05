@@ -178,6 +178,32 @@ router.delete(
   }
 );
 
+// Update Round Status
+router.put("/:companyId/rounds/:roundId/status", auth, async (req, res) => {
+  try {
+    const { status } = req.body;
+    const validStatuses = ["Scheduled", "pending", "success", "failed"];
+    if (!status || !validStatuses.includes(status)) {
+      return res.status(400).json({ error: "Invalid or missing status" });
+    }
+
+    const company = await Company.findById(req.params.companyId);
+    if (!company) return res.status(404).json({ error: "Company not found" });
+
+    const round = company.rounds.id(req.params.roundId);
+    if (!round) return res.status(404).json({ error: "Round not found" });
+
+    round.status = status;
+
+    const savedCompany = await company.save();
+
+    res.json(savedCompany);
+  } catch (error) {
+    console.error("Error updating round status:", error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
 router.get("/search", auth, async (req, res) => {
   try {
     const companies = await Company.find({

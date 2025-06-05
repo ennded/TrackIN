@@ -8,9 +8,13 @@ import {
   ChevronUpIcon,
 } from "@heroicons/react/24/outline";
 
+const statusOptions = ["pending", "success", "failed"];
+
 const RoundAccordion = ({ companyId, round, onUpdate, onDelete }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showQuestionForm, setShowQuestionForm] = useState(false);
+  const [status, setStatus] = useState(round.status || "pending"); // default pending
+  const [updatingStatus, setUpdatingStatus] = useState(false);
 
   const handleDelete = async () => {
     if (window.confirm(`Delete ${round.roundName} round?`)) {
@@ -25,6 +29,30 @@ const RoundAccordion = ({ companyId, round, onUpdate, onDelete }) => {
           `Deletion failed: ${error.response?.data?.message || "Server error"}`
         );
       }
+    }
+  };
+
+  const handleStatusChange = async (e) => {
+    const newStatus = e.target.value;
+    setStatus(newStatus);
+    setUpdatingStatus(true);
+
+    try {
+      const { data } = await api.put(
+        `/companies/${companyId}/rounds/${round._id}/status`,
+        { status: newStatus }
+      );
+      onUpdate(data); // update parent with new data
+    } catch (error) {
+      console.error("Status update failed:", error);
+      alert(
+        `Status update failed: ${
+          error.response?.data?.message || "Server error"
+        }`
+      );
+      setStatus(round.status || "pending"); // revert status in case of failure
+    } finally {
+      setUpdatingStatus(false);
     }
   };
 
@@ -47,12 +75,26 @@ const RoundAccordion = ({ companyId, round, onUpdate, onDelete }) => {
             ({round.questions.length} questions)
           </span>
         </div>
-        <button
-          onClick={handleDelete}
-          className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50"
-        >
-          <TrashIcon className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-3">
+          <select
+            value={status}
+            onChange={handleStatusChange}
+            disabled={updatingStatus}
+            className="border border-gray-300 rounded px-2 py-1 text-sm"
+          >
+            {statusOptions.map((option) => (
+              <option key={option} value={option}>
+                {option.charAt(0).toUpperCase() + option.slice(1)}
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={handleDelete}
+            className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50"
+          >
+            <TrashIcon className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {isExpanded && (
