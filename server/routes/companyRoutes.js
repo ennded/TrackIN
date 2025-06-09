@@ -156,24 +156,38 @@ router.patch("/:id", auth, async (req, res) => {
 //   }
 // );
 
+import mongoose from "mongoose";
+
 router.delete(
   "/:companyId/rounds/:roundId/questions/:questionId",
   async (req, res) => {
+    const { companyId, roundId, questionId } = req.params;
+
+    // ✅ Validate IDs
+    if (
+      ![companyId, roundId, questionId].every(mongoose.Types.ObjectId.isValid)
+    ) {
+      return res.status(400).json({ error: "Invalid ID format" });
+    }
+
     try {
-      const company = await Company.findById(req.params.companyId);
+      const company = await Company.findById(companyId);
       if (!company) return res.status(404).json({ error: "Company not found" });
 
-      const round = company.rounds.id(req.params.roundId);
+      const round = company.rounds.id(roundId);
       if (!round) return res.status(404).json({ error: "Round not found" });
 
-      // Remove the question
-      round.questions.pull({ _id: req.params.questionId });
+      const question = round.questions.id(questionId);
+      if (!question)
+        return res.status(404).json({ error: "Question not found" });
 
-      // Save and return the updated company
-      const updatedCompany = await company.save();
-      res.json(updatedCompany);
+      question.remove();
+
+      await company.save();
+      res.json({ success: true });
     } catch (err) {
-      res.status(400).json({ error: err.message });
+      console.error("Error deleting question:", err);
+      res.status(500).json({ error: err.message });
     }
   }
 );
